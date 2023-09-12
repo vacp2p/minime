@@ -2,7 +2,6 @@
   "extends": "solhint:recommended",
   "rules": {
     "code-complexity": ["error", 8],
-    "compiler-fixed": "off",
     "compiler-version": ["error", "^0.8.0"],
     "func-name-mixedcase": "off",
     "func-visibility": ["error", { "ignoreConstructors": true }],
