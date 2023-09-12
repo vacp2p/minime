@@ -145,7 +145,7 @@ contract MiniMeToken is Controlled {
             require(transfersEnabled, "Transfers are not enabled");
 
             // The standard ERC 20 transferFrom functionality
-            require(allowed[_from][msg.sender] >= _amount, "No enough allowed balance");
+            require(allowed[_from][msg.sender] >= _amount, "Not enough allowed balance");
             allowed[_from][msg.sender] -= _amount;
         }
         doTransfer(_from, _to, _amount);
@@ -172,7 +172,7 @@ contract MiniMeToken is Controlled {
         //  account the transfer throws
         uint256 previousBalanceFrom = balanceOfAt(_from, block.number);
 
-        require(previousBalanceFrom >= _amount, "No enough balance");
+        require(previousBalanceFrom >= _amount, "Not enough balance");
 
         // Alerts the token controller of the transfer
         if (isContract(controller)) {
@@ -367,9 +367,9 @@ contract MiniMeToken is Controlled {
     /// @return True if the tokens are burned correctly
     function destroyTokens(address _owner, uint256 _amount) public onlyController returns (bool) {
         uint256 curTotalSupply = totalSupply();
-        require(curTotalSupply >= _amount, "No enough supply");
+        require(curTotalSupply >= _amount, "Not enough supply");
         uint256 previousBalanceFrom = balanceOf(_owner);
-        require(previousBalanceFrom >= _amount, "No enough balance");
+        require(previousBalanceFrom >= _amount, "Not enough balance");
         updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
         updateValueAtNow(balances[_owner], previousBalanceFrom - _amount);
         emit Transfer(_owner, address(0), _amount);
