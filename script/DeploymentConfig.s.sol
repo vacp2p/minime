@@ -11,7 +11,7 @@ contract DeploymentConfig is Script {
     struct NetworkConfig {
         address deployer;
         address parentToken;
-        uint256 parentSnapShotBlock;
+        uint128 parentSnapShotBlock;
         string name;
         uint8 decimals;
         string symbol;

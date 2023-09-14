@@ -30,7 +30,7 @@ contract MiniMeTokenTest is Test {
     }
 
     function testDeployment() public {
-        (, address parentToken, uint256 parentSnapShotBlock, string memory name, uint8 decimals, string memory symbol,)
+        (, address parentToken, uint128 parentSnapShotBlock, string memory name, uint8 decimals, string memory symbol,)
         = deploymentConfig.activeNetworkConfig();
         assertEq(minimeToken.name(), name);
         assertEq(minimeToken.symbol(), symbol);
@@ -40,7 +40,7 @@ contract MiniMeTokenTest is Test {
         assertEq(minimeToken.parentSnapShotBlock(), parentSnapShotBlock);
     }
 
-    function _generateTokens(address to, uint256 amount) internal {
+    function _generateTokens(address to, uint128 amount) internal {
         vm.prank(deployer);
         minimeToken.generateTokens(to, amount);
     }
@@ -70,8 +70,8 @@ contract TransferTest is MiniMeTokenTest {
     }
 
     function testTransfer() public {
-        uint256 currentBlock = block.number;
-        uint256 nextBlock = currentBlock + 1;
+        uint128 currentBlock = uint128(block.number);
+        uint128 nextBlock = currentBlock + 1;
 
         _generateTokens(accounts[0], 10);
 
@@ -102,8 +102,8 @@ contract AllowanceTest is MiniMeTokenTest {
         uint256 allowed = minimeToken.allowance(accounts[0], accounts[1]);
         assertEq(allowed, 2);
 
-        uint256 currentBlock = block.number;
-        uint256 nextBlock = currentBlock + 1;
+        uint128 currentBlock = uint128(block.number);
+        uint128 nextBlock = currentBlock + 1;
 
         // ensure `accounts[0]` has tokens
         _generateTokens(accounts[0], 10);
@@ -158,12 +158,12 @@ contract CreateCloneTokenTest is MiniMeTokenTest {
 
     function testCreateCloneToken() public {
         // fund some accounts to later check if cloned token has same balances
-        uint256 currentBlock = block.number;
+        uint128 currentBlock = uint128(block.number);
         _generateTokens(accounts[0], 7);
-        uint256 nextBlock = block.number + 1;
+        uint128 nextBlock = currentBlock + 1;
         vm.roll(nextBlock);
         _generateTokens(accounts[1], 3);
-        uint256 secondNextBlock = block.number + 2;
+        uint128 secondNextBlock = currentBlock + 2;
         vm.roll(secondNextBlock);
         _generateTokens(accounts[2], 5);
 

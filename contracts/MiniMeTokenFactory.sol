@@ -20,7 +20,7 @@ contract MiniMeTokenFactory {
     /// @return The address of the new token contract
     function createCloneToken(
         MiniMeToken _parentToken,
-        uint256 _snapshotBlock,
+        uint128 _snapshotBlock,
         string memory _tokenName,
         uint8 _decimalUnits,
         string memory _tokenSymbol,

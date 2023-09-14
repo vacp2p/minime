@@ -138,7 +138,7 @@ contract Campaign is TokenController, Owned {
 
         // Creates an equal amount of tokens as ether sent. The new tokens are created
         //  in the `_owner` address
-        if (!tokenContract.generateTokens(_owner, msg.value)) revert TokenMintFailed();
+        if (!tokenContract.generateTokens(_owner, uint128(msg.value))) revert TokenMintFailed();
 
         return;
     }

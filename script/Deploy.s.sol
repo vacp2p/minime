@@ -16,7 +16,7 @@ contract Deploy is BaseScript {
         (
             ,
             address parentToken,
-            uint256 parentSnapShotBlock,
+            uint128 parentSnapShotBlock,
             string memory name,
             uint8 decimals,
             string memory symbol,

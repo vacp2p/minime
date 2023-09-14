@@ -68,10 +68,10 @@ contract MiniMeToken is Controlled, IERC20 {
 
     // `parentSnapShotBlock` is the block number from the Parent Token that was
     //  used to determine the initial distribution of the Clone Token
-    uint256 public parentSnapShotBlock;
+    uint128 public parentSnapShotBlock;
 
     // `creationBlock` is the block number that the Clone Token was created
-    uint256 public creationBlock;
+    uint128 public creationBlock;
 
     // `balances` is the map that tracks the balance of each address, in this
     //  contract when the balance changes the block number that the change
@@ -79,7 +79,7 @@ contract MiniMeToken is Controlled, IERC20 {
     mapping(address account => Checkpoint[] history) private balances;
 
     // `allowed` tracks any extra transfer rights as in all ERC20 tokens
-    mapping(address account => mapping(address authorized => uint256 amount) allowance) private allowed;
+    mapping(address account => mapping(address authorized => uint128 amount) allowance) private allowed;
 
     // Tracks the history of the `totalSupply` of the token
     Checkpoint[] private totalSupplyHistory;
@@ -110,7 +110,7 @@ contract MiniMeToken is Controlled, IERC20 {
     constructor(
         MiniMeTokenFactory _tokenFactory,
         MiniMeToken _parentToken,
-        uint256 _parentSnapShotBlock,
+        uint128 _parentSnapShotBlock,
         string memory _tokenName,
         uint8 _decimalUnits,
         string memory _tokenSymbol,
@@ -123,7 +123,7 @@ contract MiniMeToken is Controlled, IERC20 {
         parentToken = _parentToken;
         parentSnapShotBlock = _parentSnapShotBlock;
         transfersEnabled = _transfersEnabled;
-        creationBlock = block.number;
+        creationBlock = uint128(block.number);
     }
 
     ///////////////////
@@ -136,7 +136,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @return success Whether the transfer was successful or not
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         if (!transfersEnabled) revert TransfersDisabled();
-        doTransfer(msg.sender, _to, _amount);
+        doTransfer(msg.sender, _to, uint128(_amount));
         return true;
     }
 
@@ -151,14 +151,15 @@ contract MiniMeToken is Controlled, IERC20 {
         //  this is important to recognize! Confirm that you trust the
         //  controller of this contract, which in most situations should be
         //  another open source smart contract or 0x0
+        uint128 amount = uint128(_amount);
         if (msg.sender != controller) {
             if (!transfersEnabled) revert TransfersDisabled();
 
             // The standard ERC 20 transferFrom functionality
-            if (allowed[_from][msg.sender] < _amount) revert NotEnoughAllowance();
-            allowed[_from][msg.sender] -= _amount;
+            if (allowed[_from][msg.sender] < amount) revert NotEnoughAllowance();
+            allowed[_from][msg.sender] -= amount;
         }
-        doTransfer(_from, _to, _amount);
+        doTransfer(_from, _to, amount);
         return true;
     }
 
@@ -167,20 +168,20 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _from The address holding the tokens being transferred
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
-    function doTransfer(address _from, address _to, uint256 _amount) internal {
+    function doTransfer(address _from, address _to, uint128 _amount) internal {
         if (_amount == 0) {
             emit Transfer(_from, _to, _amount); // Follow the spec to louch the event when transfer 0
             return;
         }
 
-        if (parentSnapShotBlock >= block.number) revert ParentSnapshotNotReached();
+        if (parentSnapShotBlock >= uint128(block.number)) revert ParentSnapshotNotReached();
 
         // Do not allow transfer to 0x0 or the token contract itself
         if ((_to == address(0)) || (_to == address(this))) revert InvalidDestination();
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
-        uint256 previousBalanceFrom = balanceOfAt(_from, block.number);
+        uint128 previousBalanceFrom = balanceOfAt(_from, uint128(block.number));
 
         if (previousBalanceFrom < _amount) revert NotEnoughBalance();
 
@@ -197,7 +198,7 @@ contract MiniMeToken is Controlled, IERC20 {
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        uint256 previousBalanceTo = balanceOfAt(_to, block.number);
+        uint128 previousBalanceTo = balanceOfAt(_to, uint128(block.number));
         if (previousBalanceTo + _amount < previousBalanceTo) revert Overflow(); // Check for overflow
         updateValueAtNow(balances[_to], previousBalanceTo + _amount);
 
@@ -208,7 +209,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _owner The address that's balance is being requested
     /// @return balance The balance of `_owner` at the current block
     function balanceOf(address _owner) public view returns (uint256 balance) {
-        return balanceOfAt(_owner, block.number);
+        return balanceOfAt(_owner, uint128(block.number));
     }
 
     /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
@@ -233,7 +234,7 @@ contract MiniMeToken is Controlled, IERC20 {
             }
         }
 
-        allowed[msg.sender][_spender] = _amount;
+        allowed[msg.sender][_spender] = uint128(_amount);
         emit Approval(msg.sender, _spender, _amount);
         return true;
     }
@@ -265,7 +266,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @dev This function makes it easy to get the total number of tokens
     /// @return The total number of tokens
     function totalSupply() public view returns (uint256) {
-        return totalSupplyAt(block.number);
+        return totalSupplyAt(uint128(block.number));
     }
 
     ////////////////
@@ -276,7 +277,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _owner The address from which the balance will be retrieved
     /// @param _blockNumber The block number when the balance is queried
     /// @return The balance at `_blockNumber`
-    function balanceOfAt(address _owner, uint256 _blockNumber) public view returns (uint256) {
+    function balanceOfAt(address _owner, uint128 _blockNumber) public view returns (uint128) {
         // These next few lines are used when the balance of the token is
         //  requested before a check point was ever created for this token, it
         //  requires that the `parentToken.balanceOfAt` be queried at the
@@ -299,7 +300,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @notice Total amount of tokens at a specific `_blockNumber`.
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
-    function totalSupplyAt(uint256 _blockNumber) public view returns (uint256) {
+    function totalSupplyAt(uint128 _blockNumber) public view returns (uint128) {
         // These next few lines are used when the totalSupply of the token is
         //  requested before a check point was ever created for this token, it
         //  requires that the `parentToken.totalSupplyAt` be queried at the
@@ -336,13 +337,13 @@ contract MiniMeToken is Controlled, IERC20 {
         string memory _cloneTokenName,
         uint8 _cloneDecimalUnits,
         string memory _cloneTokenSymbol,
-        uint256 _snapshotBlock,
+        uint128 _snapshotBlock,
         bool _transfersEnabled
     )
         public
         returns (address)
     {
-        if (_snapshotBlock == 0) _snapshotBlock = block.number;
+        if (_snapshotBlock == 0) _snapshotBlock = uint128(block.number);
         MiniMeToken cloneToken = tokenFactory.createCloneToken(
             this, _snapshotBlock, _cloneTokenName, _cloneDecimalUnits, _cloneTokenSymbol, _transfersEnabled
         );
@@ -362,10 +363,10 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _owner The address that will be assigned the new tokens
     /// @param _amount The quantity of tokens generated
     /// @return True if the tokens are generated correctly
-    function generateTokens(address _owner, uint256 _amount) public onlyController returns (bool) {
-        uint256 curTotalSupply = totalSupply();
+    function generateTokens(address _owner, uint128 _amount) public onlyController returns (bool) {
+        uint128 curTotalSupply = uint128(totalSupply());
         if (curTotalSupply + _amount < curTotalSupply) revert Overflow(); // Check for overflow
-        uint256 previousBalanceTo = balanceOf(_owner);
+        uint128 previousBalanceTo = uint128(balanceOf(_owner));
         if (previousBalanceTo + _amount < previousBalanceTo) revert Overflow(); // Check for overflow
         updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount);
         updateValueAtNow(balances[_owner], previousBalanceTo + _amount);
@@ -377,10 +378,10 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _owner The address that will lose the tokens
     /// @param _amount The quantity of tokens to burn
     /// @return True if the tokens are burned correctly
-    function destroyTokens(address _owner, uint256 _amount) public onlyController returns (bool) {
-        uint256 curTotalSupply = totalSupply();
+    function destroyTokens(address _owner, uint128 _amount) public onlyController returns (bool) {
+        uint128 curTotalSupply = uint128(totalSupply());
         if (curTotalSupply < _amount) revert NotEnoughSupply();
-        uint256 previousBalanceFrom = balanceOf(_owner);
+        uint128 previousBalanceFrom = uint128(balanceOf(_owner));
         if (previousBalanceFrom < _amount) revert NotEnoughBalance();
         updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
         updateValueAtNow(balances[_owner], previousBalanceFrom - _amount);
@@ -406,7 +407,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param checkpoints The history of values being queried
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
-    function getValueAt(Checkpoint[] storage checkpoints, uint256 _block) internal view returns (uint256) {
+    function getValueAt(Checkpoint[] storage checkpoints, uint128 _block) internal view returns (uint128) {
         if (checkpoints.length == 0) return 0;
 
         // Shortcut for the actual value
@@ -416,10 +417,10 @@ contract MiniMeToken is Controlled, IERC20 {
         if (_block < checkpoints[0].fromBlock) return 0;
 
         // Binary search of the value in the array
-        uint256 sMin = 0;
-        uint256 max = checkpoints.length - 1;
+        uint128 sMin = 0;
+        uint128 max = uint128(checkpoints.length - 1);
         while (max > sMin) {
-            uint256 mid = (max + sMin + 1) / 2;
+            uint128 mid = (max + sMin + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {
                 sMin = mid;
             } else {
@@ -433,8 +434,8 @@ contract MiniMeToken is Controlled, IERC20 {
     ///  `totalSupplyHistory`
     /// @param checkpoints The history of data being updated
     /// @param _value The new number of tokens
-    function updateValueAtNow(Checkpoint[] storage checkpoints, uint256 _value) internal {
-        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < block.number)) {
+    function updateValueAtNow(Checkpoint[] storage checkpoints, uint128 _value) internal {
+        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < uint128(block.number))) {
             Checkpoint storage newCheckPoint = checkpoints.push();
             newCheckPoint.fromBlock = uint128(block.number);
             newCheckPoint.value = uint128(_value);
@@ -458,7 +459,7 @@ contract MiniMeToken is Controlled, IERC20 {
     }
 
     /// @dev Helper function to return a min betwen the two uints
-    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+    function min(uint128 a, uint128 b) internal pure returns (uint128) {
         return a < b ? a : b;
     }
 
@@ -496,5 +497,5 @@ contract MiniMeToken is Controlled, IERC20 {
     // Events
     ////////////////
     event ClaimedTokens(address indexed _token, address indexed _controller, uint256 _amount);
-    event NewCloneToken(address indexed _cloneToken, uint256 _snapshotBlock);
+    event NewCloneToken(address indexed _cloneToken, uint128 _snapshotBlock);
 }
