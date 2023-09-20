@@ -42,11 +42,12 @@ import { TokenController } from "./TokenController.sol";
 import { ApproveAndCallFallBack } from "./ApproveAndCallFallBack.sol";
 import { MiniMeTokenFactory } from "./MiniMeTokenFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @dev The actual token contract, the default controller is the msg.sender
 ///  that deploys the contract, so usually this token will be deployed by a
 ///  token controller contract, which Giveth will call a "Campaign"
-contract MiniMeToken is Controlled, IERC20 {
+contract MiniMeToken is Controlled, IERC20, ReentrancyGuard {
     string public name; //The Token's name: e.g. DigixDAO Tokens
     uint8 public decimals; //Number of decimals of the smallest unit
     string public symbol; //An identifier: e.g. REP
@@ -134,7 +135,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return success Whether the transfer was successful or not
-    function transfer(address _to, uint256 _amount) public returns (bool success) {
+    function transfer(address _to, uint256 _amount) public nonReentrant returns (bool success) {
         if (!transfersEnabled) revert TransfersDisabled();
         doTransfer(msg.sender, _to, _amount);
         return true;
@@ -146,7 +147,7 @@ contract MiniMeToken is Controlled, IERC20 {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return success True if the transfer was successful
-    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _amount) public nonReentrant returns (bool success) {
         // The controller of this contract can move tokens around at will,
         //  this is important to recognize! Confirm that you trust the
         //  controller of this contract, which in most situations should be

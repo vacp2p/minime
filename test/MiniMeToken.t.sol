@@ -5,6 +5,8 @@ import { Test } from "forge-std/Test.sol";
 import { Deploy } from "../script/Deploy.s.sol";
 import { DeploymentConfig } from "../script/DeploymentConfig.s.sol";
 
+import { AttackerController } from "./AttackerController.sol";
+
 import { MiniMeToken } from "../contracts/MiniMeToken.sol";
 import { MiniMeTokenFactory } from "../contracts/MiniMeToken.sol";
 
@@ -201,5 +203,39 @@ contract CreateCloneTokenTest is MiniMeTokenTest {
 
         vm.prank(deployer);
         clone.generateTokens(accounts[0], 5);
+    }
+}
+
+contract ReentrancyAttackTest is MiniMeTokenTest {
+    AttackerController internal attackerController;
+    address internal attackerEOA = makeAddr("attackerEOA");
+
+    function setUp() public override {
+        MiniMeTokenTest.setUp();
+        attackerController = new AttackerController(attackerEOA);
+    }
+
+    function testAttack() public {
+        address sender = makeAddr("sender");
+        address receiver = makeAddr("receiver");
+        uint256 fundsAmount = 10_000;
+        uint256 sendAmount = 1000;
+
+        // ensure `sender` has funds
+        vm.prank(deployer);
+        minimeToken.generateTokens(sender, fundsAmount);
+
+        // change controller to attacker
+        vm.prank(deployer);
+        minimeToken.changeController(payable(address(attackerController)));
+
+        // sender sends tokens to receiver
+        vm.startPrank(sender);
+        vm.expectRevert(bytes("ReentrancyGuard: reentrant call"));
+        minimeToken.transfer(receiver, sendAmount);
+
+        // attack should fail, `attackerEOA` doesn't own any funds and `sender` funds are untouched
+        assertEq(minimeToken.balanceOf(attackerController.attackerEOA()), 0);
+        assertEq(minimeToken.balanceOf(sender), fundsAmount);
     }
 }
