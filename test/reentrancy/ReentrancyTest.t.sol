@@ -42,8 +42,8 @@ contract ReentrancyTest is Test {
         vm.startPrank(sender);
         minimeToken.transfer(receiver, sendAmount);
 
-        // after attack, sender has expected funds, but attacker has total funds amount
-        assertEq(minimeToken.balanceOf(attackerController.attackerEOA()), fundsAmount);
+        // after attack, sender has expected funds, and attacker has not received any funds 
+        assertEq(minimeToken.balanceOf(attackerController.attackerEOA()), 0);
         assertEq(minimeToken.balanceOf(sender), fundsAmount - sendAmount);
     }
 }
