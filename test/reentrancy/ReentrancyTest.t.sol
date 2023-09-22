@@ -4,11 +4,16 @@ pragma solidity ^0.8.0;
 import { Test } from "forge-std/Test.sol";
 import { Deploy } from "../../script/Deploy.s.sol";
 import { DeploymentConfig } from "../../script/DeploymentConfig.s.sol";
-import { Attacker } from "./Attacker.sol";
+import { AttackController } from "./AttackController.sol";
+import { AttackAccount } from "./AttackAccount.sol";
 import { MiniMeToken } from "../../contracts/MiniMeToken.sol";
+import "forge-std/console.sol";
+
+error NotEnoughBalance();
 
 contract ReentrancyTest is Test {
-    Attacker internal attackerController;
+    AttackController internal attackController;
+    AttackAccount internal attackAccount;
     MiniMeToken internal minimeToken;
     DeploymentConfig internal deploymentConfig;
     address internal deployer;
@@ -21,29 +26,45 @@ contract ReentrancyTest is Test {
         (deploymentConfig,, minimeToken) = deployment.run();
         (deployer,,,,,,) = deploymentConfig.activeNetworkConfig();
 
-        attackerController = new Attacker(attackerEOA);
+        vm.prank(attackerEOA);
+        attackAccount = new AttackAccount(minimeToken);
+        attackController = new AttackController(attackerEOA, attackAccount);
     }
 
     function testAttack() public {
         address sender = makeAddr("sender");
-        address receiver = makeAddr("receiver");
+        address receiver = address(attackAccount);
+
         uint256 fundsAmount = 10_000;
-        uint256 sendAmount = 1000;
+        uint256 allowanceAmount = fundsAmount * 6;
+        uint256 sendAmount = fundsAmount;
 
         // ensure `sender` has funds
         vm.prank(deployer);
         minimeToken.generateTokens(sender, fundsAmount);
 
-        // change controller to attacker
+        // change controller to AttackController
         vm.prank(deployer);
-        minimeToken.changeController(payable(address(attackerController)));
+        minimeToken.changeController(payable(address(attackController)));
 
         // sender sends tokens to receiver
         vm.startPrank(sender);
-        minimeToken.transfer(receiver, sendAmount);
+        minimeToken.approve(receiver, allowanceAmount);
 
-        // after attack, sender has expected funds, and attacker has not received any funds 
-        assertEq(minimeToken.balanceOf(attackerController.attackerEOA()), 0);
-        assertEq(minimeToken.balanceOf(sender), fundsAmount - sendAmount);
+        vm.startPrank(attackerEOA);
+
+        try attackAccount.attack(sender, receiver, sendAmount) {
+            console.logString("attack succeeded");
+        } catch (bytes memory err) {
+            if (keccak256(abi.encodeWithSignature("NotEnoughBalance()")) == keccak256(err)) {
+                console.logString("attack failed");
+            } else {
+                fail("unexpected error");
+            }
+        }
+
+        assertEq(minimeToken.balanceOf(attackController.attackerEOA()), 0, "Attacker EOA should not receive any funds");
+        assertEq(minimeToken.balanceOf(sender), fundsAmount - sendAmount, "Sender should have expected funds");
+        assertEq(minimeToken.balanceOf(receiver), sendAmount, "Receiver should have expected funds");
     }
 }
