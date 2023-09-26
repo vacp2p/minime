@@ -1,7 +1,7 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2098051                                        | 11904           |       |        |       |         |
+| 2086437                                        | 11846           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
@@ -13,7 +13,7 @@
 | claimTokens                                    | 9559            | 40647 | 56192  | 56192 | 3       |
 | controller                                     | 0               | 0     | 0      | 0     | 10      |
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
-| destroyTokens                                  | 2098            | 4543  | 3890   | 7643  | 3       |
+| destroyTokens                                  | 3864            | 5115  | 3864   | 7617  | 3       |
 | enableTransfers                                | 0               | 0     | 0      | 0     | 3       |
 | generateTokens                                 | 0               | 16361 | 0      | 95178 | 64      |
 | name                                           | 0               | 0     | 0      | 0     | 10      |

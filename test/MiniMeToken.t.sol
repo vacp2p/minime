@@ -11,7 +11,6 @@ import {
     TransfersDisabled,
     InvalidDestination,
     NotEnoughBalance,
-    NotEnoughSupply,
     NotEnoughAllowance,
     AllowanceAlreadySet,
     ControllerRejected,
@@ -705,7 +704,7 @@ contract DestroyTokensTest is MiniMeTokenTest {
 
         vm.prank(deployer);
         vm.resumeGasMetering();
-        vm.expectRevert(NotEnoughSupply.selector);
+        vm.expectRevert(NotEnoughBalance.selector);
         minimeToken.destroyTokens(accounts[0], 11);
         vm.pauseGasMetering();
         assertEq(minimeToken.totalSupply(), 10, "total supply should be correct");
