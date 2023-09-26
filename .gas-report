@@ -1,12 +1,12 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2142502                                        | 12126           |       |        |       |         |
+| 2131887                                        | 12073           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
 | approve                                        | 0               | 15064 | 14767  | 31771 | 10      |
-| approveAndCall                                 | 0               | 30979 | 0      | 92937 | 3       |
+| approveAndCall                                 | 0               | 30975 | 0      | 92925 | 3       |
 | balanceOf                                      | 0               | 622   | 0      | 2753  | 67      |
 | balanceOfAt                                    | 0               | 830   | 0      | 3766  | 78      |
 | changeController                               | 0               | 596   | 0      | 3580  | 6       |

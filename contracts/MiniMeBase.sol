@@ -10,7 +10,6 @@ error InvalidDestination();
 error ControllerRejected();
 error Overflow();
 error AllowanceAlreadySet();
-error OperationFailed();
 error ControllerNotSet();
 error ERC2612ExpiredSignature(uint256 deadline);
 error ERC2612InvalidSigner(address signer, address owner);
@@ -282,7 +281,7 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return success True if the function call was successful
     function approveAndCall(address _spender, uint256 _amount, bytes memory _extraData) public returns (bool success) {
-        if (!approve(_spender, _amount)) revert OperationFailed();
+        approve(_spender, _amount);
 
         ApproveAndCallFallBack(_spender).receiveApproval(msg.sender, _amount, address(this), _extraData);
 
