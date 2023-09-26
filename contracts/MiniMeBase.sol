@@ -413,17 +413,18 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
     function getValueAt(Checkpoint[] storage checkpoints, uint256 _block) internal view returns (uint256) {
-        if (checkpoints.length == 0) return 0;
+        uint256 len = checkpoints.length;
+        if (len == 0) return 0;
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length - 1].fromBlock) {
-            return checkpoints[checkpoints.length - 1].value;
+        if (_block >= checkpoints[len - 1].fromBlock) {
+            return checkpoints[len - 1].value;
         }
         if (_block < checkpoints[0].fromBlock) return 0;
 
         // Binary search of the value in the array
         uint256 sMin = 0;
-        uint256 max = checkpoints.length - 1;
+        uint256 max = len - 1;
         while (max > sMin) {
             uint256 mid = (max + sMin + 1) / 2;
             if (checkpoints[mid].fromBlock <= _block) {

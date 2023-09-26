@@ -1,21 +1,21 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2136695                                        | 12097           |       |        |       |         |
+| 2135687                                        | 12092           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
 | approve                                        | 0               | 15064 | 14767  | 31771 | 10      |
-| approveAndCall                                 | 0               | 31210 | 0      | 93632 | 3       |
-| balanceOf                                      | 0               | 663   | 0      | 2753  | 67      |
-| balanceOfAt                                    | 0               | 890   | 0      | 3982  | 78      |
+| approveAndCall                                 | 0               | 31140 | 0      | 93422 | 3       |
+| balanceOf                                      | 0               | 622   | 0      | 2753  | 67      |
+| balanceOfAt                                    | 0               | 830   | 0      | 3766  | 78      |
 | changeController                               | 0               | 596   | 0      | 3580  | 6       |
-| claimTokens                                    | 9559            | 41318 | 57198  | 57198 | 3       |
+| claimTokens                                    | 9559            | 41038 | 56778  | 56778 | 3       |
 | controller                                     | 0               | 0     | 0      | 0     | 10      |
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
-| destroyTokens                                  | 2308            | 5207  | 4310   | 9005  | 3       |
+| destroyTokens                                  | 2098            | 4857  | 3890   | 8585  | 3       |
 | enableTransfers                                | 0               | 0     | 0      | 0     | 3       |
-| generateTokens                                 | 0               | 16512 | 0      | 95730 | 64      |
+| generateTokens                                 | 0               | 16436 | 0      | 95310 | 64      |
 | name                                           | 0               | 0     | 0      | 0     | 10      |
 | nonces                                         | 654             | 1854  | 2654   | 2654  | 5       |
 | parentSnapShotBlock                            | 0               | 0     | 0      | 0     | 11      |
@@ -23,10 +23,10 @@
 | permit                                         | 711             | 39822 | 53956  | 58456 | 10      |
 | receive                                        | 7960            | 7979  | 7979   | 7998  | 2       |
 | symbol                                         | 0               | 0     | 0      | 0     | 10      |
-| totalSupply                                    | 0               | 274   | 0      | 2480  | 23      |
-| totalSupplyAt                                  | 0               | 859   | 0      | 3614  | 17      |
-| transfer                                       | 548             | 39300 | 50417  | 93024 | 20      |
-| transferFrom                                   | 0               | 19676 | 3495   | 66551 | 11      |
+| totalSupply                                    | 0               | 255   | 0      | 2480  | 23      |
+| totalSupplyAt                                  | 0               | 797   | 0      | 3398  | 17      |
+| transfer                                       | 548             | 39069 | 50207  | 92814 | 20      |
+| transferFrom                                   | 0               | 19588 | 3495   | 66131 | 11      |
 
 
 
