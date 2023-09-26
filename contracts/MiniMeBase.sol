@@ -441,13 +441,18 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
     /// @param checkpoints The history of data being updated
     /// @param _value The new number of tokens
     function updateValueAtNow(Checkpoint[] storage checkpoints, uint256 _value) internal {
-        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < block.number)) {
-            Checkpoint storage newCheckPoint = checkpoints.push();
-            newCheckPoint.fromBlock = uint128(block.number);
-            newCheckPoint.value = uint128(_value);
+        uint256 len = checkpoints.length;
+        if (len > 0) {
+            Checkpoint storage checkpoint = checkpoints[len - 1];
+            if (checkpoint.fromBlock < block.number) {
+                checkpoint = checkpoints.push();
+                checkpoint.fromBlock = uint128(block.number);
+            }
+            checkpoint.value = uint128(_value);
         } else {
-            Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length - 1];
-            oldCheckPoint.value = uint128(_value);
+            Checkpoint storage checkpoint = checkpoints.push();
+            checkpoint.fromBlock = uint128(block.number);
+            checkpoint.value = uint128(_value);
         }
     }
 
