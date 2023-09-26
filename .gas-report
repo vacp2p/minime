@@ -1,7 +1,7 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2115066                                        | 11989           |       |        |       |         |
+| 2098051                                        | 11904           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
@@ -15,7 +15,7 @@
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
 | destroyTokens                                  | 2098            | 4543  | 3890   | 7643  | 3       |
 | enableTransfers                                | 0               | 0     | 0      | 0     | 3       |
-| generateTokens                                 | 0               | 16391 | 0      | 95282 | 64      |
+| generateTokens                                 | 0               | 16361 | 0      | 95178 | 64      |
 | name                                           | 0               | 0     | 0      | 0     | 10      |
 | nonces                                         | 654             | 1854  | 2654   | 2654  | 5       |
 | parentSnapShotBlock                            | 0               | 0     | 0      | 0     | 11      |

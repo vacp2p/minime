@@ -370,7 +370,6 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
         uint256 curTotalSupply = totalSupply();
         if (uint128(curTotalSupply + _amount) < curTotalSupply) revert Overflow(); // Check for overflow
         uint256 previousBalanceTo = balanceOf(_owner);
-        if (uint128(previousBalanceTo + _amount) < previousBalanceTo) revert Overflow(); // Check for overflow
         updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount);
         updateValueAtNow(balances[_owner], previousBalanceTo + _amount);
         emit Transfer(address(0), _owner, _amount);
