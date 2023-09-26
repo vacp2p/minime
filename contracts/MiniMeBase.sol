@@ -488,13 +488,14 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
     /// @param _token The address of the token contract that you want to recover
     ///  set to 0 in case you want to extract ether.
     function claimTokens(IERC20 _token) public onlyController {
+        uint256 balance;
         if (address(_token) == address(0)) {
-            controller.transfer(address(this).balance);
-            return;
+            balance = address(this).balance;
+            controller.transfer(balance);
+        } else {
+            balance = _token.balanceOf(address(this));
+            _token.transfer(controller, balance);
         }
-
-        uint256 balance = _token.balanceOf(address(this));
-        _token.transfer(controller, balance);
         emit ClaimedTokens(address(_token), controller, balance);
     }
 
