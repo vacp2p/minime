@@ -2,20 +2,13 @@
 pragma solidity ^0.8.0;
 
 import { MiniMeBase } from "./MiniMeBase.sol";
-import { MiniMeTokenFactory } from "./MiniMeTokenFactory.sol";
 
 contract MiniMeToken is MiniMeBase {
-    // The factory used to create new clone tokens
-    MiniMeTokenFactory public immutable tokenFactory;
-
     ////////////////
     // Constructor
     ////////////////
 
     /// @notice Constructor to create a MiniMeToken
-    /// @param _tokenFactory The address of the MiniMeTokenFactory contract that
-    ///  will create the Clone token contracts, the token factory needs to be
-    ///  deployed first
     /// @param _parentToken Address of the parent token, set to 0x0 if it is a
     ///  new token
     /// @param _parentSnapShotBlock Block of the parent token that will
@@ -26,7 +19,6 @@ contract MiniMeToken is MiniMeBase {
     /// @param _tokenSymbol Token Symbol for the new token
     /// @param _transfersEnabled If true, tokens will be able to be transferred
     constructor(
-        MiniMeTokenFactory _tokenFactory,
         MiniMeToken _parentToken,
         uint256 _parentSnapShotBlock,
         string memory _tokenName,
@@ -35,9 +27,7 @@ contract MiniMeToken is MiniMeBase {
         bool _transfersEnabled
     )
         MiniMeBase(_parentToken, _parentSnapShotBlock, _tokenName, _decimalUnits, _tokenSymbol, _transfersEnabled)
-    {
-        tokenFactory = _tokenFactory;
-    }
+    { }
 
     ////////////////
     // Generate and destroy tokens

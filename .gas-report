@@ -1,32 +1,32 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2149485                                        | 12251           |       |        |       |         |
+| 2136695                                        | 12097           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
-| DOMAIN_SEPARATOR                               | 365             | 365   | 365    | 365   | 10      |
-| allowance                                      | 0               | 202   | 0      | 808   | 16      |
+| DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
+| allowance                                      | 0               | 190   | 0      | 763   | 16      |
 | approve                                        | 0               | 15064 | 14767  | 31771 | 10      |
-| approveAndCall                                 | 0               | 31232 | 0      | 93698 | 3       |
-| balanceOf                                      | 0               | 657   | 0      | 2731  | 67      |
-| balanceOfAt                                    | 0               | 905   | 0      | 4027  | 78      |
-| changeController                               | 0               | 593   | 0      | 3558  | 6       |
-| claimTokens                                    | 9537            | 41267 | 57132  | 57132 | 3       |
+| approveAndCall                                 | 0               | 31210 | 0      | 93632 | 3       |
+| balanceOf                                      | 0               | 663   | 0      | 2753  | 67      |
+| balanceOfAt                                    | 0               | 890   | 0      | 3982  | 78      |
+| changeController                               | 0               | 596   | 0      | 3580  | 6       |
+| claimTokens                                    | 9559            | 41318 | 57198  | 57198 | 3       |
 | controller                                     | 0               | 0     | 0      | 0     | 10      |
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
-| destroyTokens                                  | 2286            | 5185  | 4288   | 8983  | 3       |
+| destroyTokens                                  | 2308            | 5207  | 4310   | 9005  | 3       |
 | enableTransfers                                | 0               | 0     | 0      | 0     | 3       |
-| generateTokens                                 | 0               | 16532 | 0      | 95885 | 64      |
+| generateTokens                                 | 0               | 16512 | 0      | 95730 | 64      |
 | name                                           | 0               | 0     | 0      | 0     | 10      |
-| nonces                                         | 632             | 1832  | 2632   | 2632  | 5       |
+| nonces                                         | 654             | 1854  | 2654   | 2654  | 5       |
 | parentSnapShotBlock                            | 0               | 0     | 0      | 0     | 11      |
 | parentToken                                    | 0               | 0     | 0      | 0     | 11      |
-| permit                                         | 689             | 39800 | 53934  | 58434 | 10      |
+| permit                                         | 711             | 39822 | 53956  | 58456 | 10      |
 | receive                                        | 7960            | 7979  | 7979   | 7998  | 2       |
 | symbol                                         | 0               | 0     | 0      | 0     | 10      |
 | totalSupply                                    | 0               | 274   | 0      | 2480  | 23      |
-| totalSupplyAt                                  | 0               | 873   | 0      | 3659  | 17      |
-| transfer                                       | 526             | 39283 | 50395  | 93092 | 20      |
-| transferFrom                                   | 0               | 19678 | 3495   | 66574 | 11      |
+| totalSupplyAt                                  | 0               | 859   | 0      | 3614  | 17      |
+| transfer                                       | 548             | 39300 | 50417  | 93024 | 20      |
+| transferFrom                                   | 0               | 19676 | 3495   | 66551 | 11      |
 
 
 

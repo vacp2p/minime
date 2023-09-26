@@ -20,12 +20,10 @@ import {
     IERC20
 } from "../contracts/MiniMeBase.sol";
 import { MiniMeToken } from "../contracts/MiniMeToken.sol";
-import { MiniMeTokenFactory } from "../contracts/MiniMeTokenFactory.sol";
 import { ApproveAndCallFallBack } from "../contracts/ApproveAndCallFallBack.sol";
 
 contract MiniMeTokenTest is Test {
     DeploymentConfig internal deploymentConfig;
-    MiniMeTokenFactory internal minimeTokenFactory;
     MiniMeToken internal minimeToken;
 
     address internal deployer;
@@ -34,7 +32,7 @@ contract MiniMeTokenTest is Test {
 
     function setUp() public virtual {
         Deploy deployment = new Deploy();
-        (deploymentConfig, minimeTokenFactory, minimeToken) = deployment.run();
+        (deploymentConfig, minimeToken) = deployment.run();
         (deployer,,,,,,) = deploymentConfig.activeNetworkConfig();
 
         accounts = new address[](4);
@@ -739,7 +737,6 @@ contract CreateCloneTokenTest is MiniMeTokenTest {
 
     function _createClone() internal returns (MiniMeToken clone) {
         return new MiniMeToken(
-          minimeTokenFactory, 
           minimeToken, 
           block.number, 
           "Clone Token 1",
@@ -899,8 +896,7 @@ contract CreateCloneTokenTest is MiniMeTokenTest {
         _generateTokens(accounts[0], 10);
 
         vm.prank(accounts[3]);
-        MiniMeToken clone = new MiniMeToken(
-          minimeTokenFactory, 
+        MiniMeToken clone = new MiniMeToken( 
           minimeToken, 
           block.number+1, 
           "TestFutureSnapshot", 
@@ -936,7 +932,6 @@ contract ClaimTokensTest is MiniMeTokenTest {
         vm.pauseGasMetering();
         vm.startPrank(deployer);
         MiniMeToken claimTest = new MiniMeToken(
-          minimeTokenFactory, 
           MiniMeToken(payable(address(0))), 
           0, 
           "TestClaim", 

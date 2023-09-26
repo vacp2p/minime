@@ -5,13 +5,9 @@ import { BaseScript } from "./Base.s.sol";
 import { DeploymentConfig } from "./DeploymentConfig.s.sol";
 
 import { MiniMeToken } from "../contracts/MiniMeToken.sol";
-import { MiniMeTokenFactory } from "../contracts/MiniMeToken.sol";
 
 contract Deploy is BaseScript {
-    function run()
-        public
-        returns (DeploymentConfig deploymentConfig, MiniMeTokenFactory minimeFactory, MiniMeToken minimeToken)
-    {
+    function run() public returns (DeploymentConfig deploymentConfig, MiniMeToken minimeToken) {
         deploymentConfig = new DeploymentConfig(broadcaster);
         (
             ,
@@ -24,9 +20,7 @@ contract Deploy is BaseScript {
         ) = deploymentConfig.activeNetworkConfig();
 
         vm.startBroadcast(broadcaster);
-        minimeFactory = new MiniMeTokenFactory();
         minimeToken = new MiniMeToken(
-          minimeFactory, 
           MiniMeToken(payable(parentToken)), 
           parentSnapShotBlock, 
           name, 
