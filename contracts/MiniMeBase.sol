@@ -5,7 +5,6 @@ error TransfersDisabled();
 error ParentSnapshotNotReached();
 error NotEnoughBalance();
 error NotEnoughAllowance();
-error NotEnoughSupply();
 error InvalidDestination();
 error ControllerRejected();
 error Overflow();
@@ -382,7 +381,6 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
     /// @return True if the tokens are burned correctly
     function _burn(address _owner, uint256 _amount) internal virtual returns (bool) {
         uint256 curTotalSupply = totalSupply();
-        if (curTotalSupply < _amount) revert NotEnoughSupply();
         uint256 previousBalanceFrom = balanceOf(_owner);
         if (previousBalanceFrom < _amount) revert NotEnoughBalance();
         updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
