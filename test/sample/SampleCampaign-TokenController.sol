@@ -25,8 +25,8 @@ pragma solidity ^0.8.0;
 ///  funds for non-profit causes, but it can be customized for any variety of
 ///  purposes.
 
-import { MiniMeToken } from "../MiniMeToken.sol";
-import { TokenController } from "../TokenController.sol";
+import { MiniMeToken } from "contracts/MiniMeToken.sol";
+import { TokenController } from "contracts/TokenController.sol";
 import { Owned } from "./Owned.sol";
 
 error NotAuthorized();
