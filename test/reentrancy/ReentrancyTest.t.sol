@@ -18,7 +18,7 @@ contract ReentrancyTest is Test {
 
     function setUp() public {
         Deploy deployment = new Deploy();
-        (deploymentConfig,, minimeToken) = deployment.run();
+        (deploymentConfig, minimeToken) = deployment.run();
         (deployer,,,,,,) = deploymentConfig.activeNetworkConfig();
 
         vm.prank(attackerEOA);
