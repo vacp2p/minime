@@ -1,7 +1,7 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2086437                                        | 11846           |       |        |       |         |
+| 2088237                                        | 11855           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
@@ -10,7 +10,7 @@
 | balanceOf                                      | 0               | 622   | 0      | 2753  | 67      |
 | balanceOfAt                                    | 0               | 830   | 0      | 3766  | 78      |
 | changeController                               | 0               | 596   | 0      | 3580  | 6       |
-| claimTokens                                    | 9559            | 40647 | 56192  | 56192 | 3       |
+| claimTokens                                    | 9559            | 40641 | 56183  | 56183 | 3       |
 | controller                                     | 0               | 0     | 0      | 0     | 10      |
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
 | destroyTokens                                  | 3864            | 5115  | 3864   | 7617  | 3       |
@@ -26,7 +26,7 @@
 | totalSupply                                    | 0               | 255   | 0      | 2480  | 23      |
 | totalSupplyAt                                  | 0               | 797   | 0      | 3398  | 17      |
 | transfer                                       | 548             | 38822 | 49621  | 92685 | 20      |
-| transferFrom                                   | 0               | 19397 | 3495   | 65545 | 11      |
+| transferFrom                                   | 0               | 19396 | 3494   | 65544 | 11      |
 
 
 

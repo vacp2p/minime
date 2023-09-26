@@ -493,9 +493,8 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
             return;
         }
 
-        IERC20 token = _token;
-        uint256 balance = token.balanceOf(address(this));
-        token.transfer(controller, balance);
+        uint256 balance = _token.balanceOf(address(this));
+        _token.transfer(controller, balance);
         emit ClaimedTokens(address(_token), controller, balance);
     }
 
