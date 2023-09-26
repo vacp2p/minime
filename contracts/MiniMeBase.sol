@@ -182,7 +182,6 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
         // Then update the balance array with the new value for the address
         //  receiving the tokens
         uint256 previousBalanceTo = balanceOfAt(_to, block.number);
-        if (uint128(previousBalanceTo + _amount) < previousBalanceTo) revert Overflow(); // Check for overflow
         updateValueAtNow(balances[_to], previousBalanceTo + _amount);
 
         // Alerts the token controller of the transfer

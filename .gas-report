@@ -1,16 +1,16 @@
 | contracts/MiniMeToken.sol:MiniMeToken contract |                 |       |        |       |         |
 |------------------------------------------------|-----------------|-------|--------|-------|---------|
 | Deployment Cost                                | Deployment Size |       |        |       |         |
-| 2131887                                        | 12073           |       |        |       |         |
+| 2115066                                        | 11989           |       |        |       |         |
 | Function Name                                  | min             | avg   | median | max   | # calls |
 | DOMAIN_SEPARATOR                               | 387             | 387   | 387    | 387   | 10      |
 | allowance                                      | 0               | 190   | 0      | 763   | 16      |
 | approve                                        | 0               | 15064 | 14767  | 31771 | 10      |
-| approveAndCall                                 | 0               | 30975 | 0      | 92925 | 3       |
+| approveAndCall                                 | 0               | 30941 | 0      | 92824 | 3       |
 | balanceOf                                      | 0               | 622   | 0      | 2753  | 67      |
 | balanceOfAt                                    | 0               | 830   | 0      | 3766  | 78      |
 | changeController                               | 0               | 596   | 0      | 3580  | 6       |
-| claimTokens                                    | 9559            | 40715 | 56293  | 56293 | 3       |
+| claimTokens                                    | 9559            | 40647 | 56192  | 56192 | 3       |
 | controller                                     | 0               | 0     | 0      | 0     | 10      |
 | decimals                                       | 0               | 0     | 0      | 0     | 10      |
 | destroyTokens                                  | 2098            | 4543  | 3890   | 7643  | 3       |
@@ -25,8 +25,8 @@
 | symbol                                         | 0               | 0     | 0      | 0     | 10      |
 | totalSupply                                    | 0               | 255   | 0      | 2480  | 23      |
 | totalSupplyAt                                  | 0               | 797   | 0      | 3398  | 17      |
-| transfer                                       | 548             | 38898 | 49722  | 92786 | 20      |
-| transferFrom                                   | 0               | 19430 | 3495   | 65646 | 11      |
+| transfer                                       | 548             | 38822 | 49621  | 92685 | 20      |
+| transferFrom                                   | 0               | 19397 | 3495   | 65545 | 11      |
 
 
 
