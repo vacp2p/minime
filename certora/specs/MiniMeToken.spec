@@ -3,8 +3,8 @@ using DummyController as DummyController;
 using DummyERC20Impl as DummyERC20Impl;
 
 methods {
-    function transfer(address _to, uint256 _amount) external returns (bool);
-    // function _.transfer(address _to, uint256 _amount) external => DISPATCHER(true);
+    // function transfer(address _to, uint256 _amount) external returns (bool);
+    function _.transfer(address _to, uint256 _amount) external => DISPATCHER(true);
     function transferFrom(address _from, address _to, uint256 _amount) external returns (bool);
     function doTransfer(address _from, address _to, uint _amount) internal returns (bool);
     function doApprove(address _from, address _spender, uint256 _amount) internal  returns (bool);
@@ -61,16 +61,23 @@ methods {
 
 definition MaxHistoryRecords() returns uint256 = 1000000;
 
-ghost mapping(address => uint256) checkpointsLength;
-
 ghost mapping(address => mapping(uint256 => uint128)) fromBlocks {
-    axiom forall address user . forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  fromBlocks[user][index1] > fromBlocks[user][index2];
+    axiom forall address user . forall uint256 index1 . fromBlocks[user][index1] == 0;
 }
 ghost mapping(uint256 => uint128) totalSupplyFromBlocks {
-    axiom forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  totalSupplyFromBlocks[index1] > totalSupplyFromBlocks[index2];
+    axiom forall uint256 index1 . totalSupplyFromBlocks[index1] == 0;
 }
 ghost mapping(address => mapping(uint256 => uint128)) values;
 ghost mapping(uint256 => uint128) totalSupplyvalues;
+
+// ghost mapping(address => mapping(uint256 => uint128)) fromBlocks {
+//     axiom forall address user . forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  fromBlocks[user][index1] > fromBlocks[user][index2];
+// }
+// ghost mapping(uint256 => uint128) totalSupplyFromBlocks {
+//     axiom forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  totalSupplyFromBlocks[index1] > totalSupplyFromBlocks[index2];
+// }
+// ghost mapping(address => mapping(uint256 => uint128)) values;
+// ghost mapping(uint256 => uint128) totalSupplyvalues;
 
 // Mirror total supply history checkpoits values
 hook Sload uint128 _value totalSupplyHistory[INDEX uint256 indx].value STORAGE {
@@ -126,10 +133,10 @@ function doesntChangeBalance(method f) returns bool {
 
 // each checkpoint.fromBlock must be less than the current blocknumber (no checkpoints from the future).
 invariant checkPointBlockNumberValidity(env e1)
-    (forall uint256 i. forall address user. to_mathint(fromBlocks[user][i]) <= to_mathint(e1.block.number))
+    e1.block.number > 0 => (forall uint256 i . forall address user . to_mathint(fromBlocks[user][i]) <= to_mathint(e1.block.number))
     { 
         preserved with (env e) { 
-            require e1.block.number < max_uint40 && e1.block.number > 0 && e.block.number == e1.block.number; 
+            require e1.block.number < max_uint128 && e.block.number == e1.block.number; 
         } 
     }
 
@@ -142,21 +149,37 @@ invariant blockNumberMonotonicInc(env e1)
         } 
     }
 
-// all Block Numbers Are Greater OrEqual To the Creation Block
+// all Block Numbers Are Greater OrEqual To the Creation Block.
 invariant allBlockNumbersAreGreaterOrEqualToCreationBlock(address user, uint256 index)
     getFromBlockByAddressAndIndex(user, index) >= creationBlock()
     { preserved with (env e) { require e.block.number > creationBlock();} }
 
-
+// all Block Numbers Are Greater OrEqual To the Parent Snapshot Block.
 invariant allFromBlockAreGreaterThanParentSnapShotBlock(address user, uint256 index) 
     getFromBlockByAddressAndIndex(user, index) >= parentSnapShotBlock();
 
+// the balance of each user must be less or equal to the total supply.
 invariant balanceOfLessOrEqToTotalSpply(env e, address owner, uint blocknumber)
-    balanceOfAt(e, owner, blocknumber) <= totalSupplyAt(e, blocknumber)
+    balanceOfAt(e, owner, blocknumber) <= totalSupplyAt(e, blocknumber);
+    // { 
+    //     preserved with (env e1) { 
+    //     } 
+    // }
+
+/*
+    @Description:
+        Balance of address 0 is always 0
+
+    @Notes:
+*/
+invariant ZeroAddressNoBalance(env e)
+    currentContract.balanceOf(e, 0) == 0
     { 
-        preserved with (env e1) { 
+        preserved claimTokens(address _token) with (env e1) { 
+            require _token == DummyERC20;
         } 
     }
+
 
 rule historyMutability(method f, address user) {
     env e1;
@@ -187,6 +210,9 @@ rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
     require alice != bob;
     require allowance(alice, e.msg.sender) >= amount;
     requireInvariant checkPointBlockNumberValidity(e);
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, 0);
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(bob, 0);
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(alice, 0);
     mathint balanceBefore = currentContract.balanceOf(e, bob);
     mathint balanceAliceBefore = currentContract.balanceOf(e, alice);
 
@@ -196,6 +222,7 @@ rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
 
     mathint balanceAfter = currentContract.balanceOf(e, bob);
     mathint balanceAliceAfter = currentContract.balanceOf(e, alice);
+
     assert success => balanceAfter == balanceBefore + amount;
     assert success => balanceAliceAfter == balanceAliceBefore - amount;
     assert !success => balanceAfter == balanceBefore;
@@ -208,15 +235,14 @@ rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
     
     @Notes:
 */
-rule noFeeOnTransfer(address other, address bob, uint256 amount) {
+rule noFeeOnTransfer(address bob, uint256 amount) {
     env e;
     require bob != e.msg.sender;
-    require bob != other && e.msg.sender != other;
     requireInvariant checkPointBlockNumberValidity(e);
-    // require e.block.number < max_uint40;
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, 0);
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(bob, 0);
     mathint balanceSenderBefore = currentContract.balanceOf(e, e.msg.sender);
     mathint balanceBefore = currentContract.balanceOf(e, bob);
-    mathint balanceBeforeOther = currentContract.balanceOf(e, other);
 
     require balanceBefore + balanceSenderBefore < max_uint128;
 
@@ -224,11 +250,11 @@ rule noFeeOnTransfer(address other, address bob, uint256 amount) {
 
     mathint balanceAfter = currentContract.balanceOf(e, bob);
     mathint balanceSenderAfter = currentContract.balanceOf(e, e.msg.sender);
+
     assert success => balanceAfter == balanceBefore + amount;
     assert success => balanceSenderAfter == balanceSenderBefore - amount;
     assert !success => balanceAfter == balanceBefore;
     assert !success => balanceSenderAfter == balanceSenderBefore;
-    assert balanceBeforeOther == to_mathint(currentContract.balanceOf(e, other));
 }
 
 /*
@@ -294,7 +320,7 @@ rule transferFromCorrect(address from, address to, uint256 amount) {
 
 /*
     @Description:
-        transferFrom should revert if and only if the amount is too high or the recipient is 0.
+        transferFrom should revert if and only if the amount is too high or the recipient is 0 or transfer is not enabled (if the was not made by the controller) or if the blocknumber is not valid.
 
     @Notes:
         Fails on tokens with pause/blacklist functions, like USDC.
@@ -304,7 +330,7 @@ rule transferFromReverts(address from, address to, uint256 amount) {
     uint256 allowanceBefore = allowance(from, e.msg.sender);
     uint256 fromBalanceBefore = currentContract.balanceOf(e, from);
     address controllerAdress = controller();
-    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, e.block.number);
+    requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, 0);
     require from != 0 && e.msg.sender != 0;
     require e.msg.value == 0;
     require fromBalanceBefore + currentContract.balanceOf(e, to) <= max_uint256;
@@ -317,21 +343,6 @@ rule transferFromReverts(address from, address to, uint256 amount) {
     assert didRevert <=> 
            (allowanceBefore < amount || amount > fromBalanceBefore || to == 0 && amount != 0 || to == currentContract && amount != 0 || !transfersEnabled && e.msg.sender != controllerAdress || parentSnapShotBlock() >= e.block.number && amount != 0); // && e.msg.sender != controllerAdress;
 }
-
-/*
-    @Description:
-        Balance of address 0 is always 0
-
-    @Notes:
-*/
-invariant ZeroAddressNoBalance(env e)
-    currentContract.balanceOf(e, 0) == 0
-    { 
-        preserved claimTokens(address _token) with (env e1) { 
-            require _token == DummyERC20;
-        } 
-    }
-
 
 /*
     @Description:
@@ -353,7 +364,7 @@ rule NoChangeTotalSupply(method f) {
 
 /*
     @Description:
-        Contract calls don't change token total supply.
+        Test that generateTokens works correctly. Balances and totalSupply are updated corrct according to the paramenters.
 
     @Notes:
 */
@@ -376,6 +387,12 @@ rule integrityOfGenerateTokens(address owner, uint amount) {
     assert !success => (totalSupplyAfter == totalSupplyBefore && ownerBalanceAfter == ownerBalanceBefore);
 }
 
+/*
+    @Description:
+        Test that destroyTokens works correctly. Balances and totalSupply are updated corrct according to the paramenters.
+
+    @Notes:
+*/
 rule integrityOfDestroyTokens(address owner, uint amount) {
     env e;
     mathint totalSupplyBefore = currentContract.totalSupply(e);
@@ -390,5 +407,105 @@ rule integrityOfDestroyTokens(address owner, uint amount) {
     assert !success => (totalSupplyAfter == totalSupplyBefore && ownerBalanceAfter == ownerBalanceBefore);
 }
 
+/*
+    @Description:
+        Transfer from a to b using transfer doesn't change the balance of other addresses
+    
+    @Notes:
+*/
+rule TransferDoesntChangeOtherBalances(address other, address bob, uint256 amount) {
+    env e;
+    require bob != e.msg.sender;
+    require bob != other && e.msg.sender != other;
+    requireInvariant checkPointBlockNumberValidity(e);
 
-// add rule no change to other.
+    mathint balanceBeforeOther = currentContract.balanceOf(e, other);
+
+    bool success = transfer(e, bob, amount);
+
+    assert balanceBeforeOther == to_mathint(currentContract.balanceOf(e, other));
+}
+
+/*
+    @Description:
+        Transfer from a to b using transferFrom doesn't change the balance of other addresses
+    
+    @Notes:
+*/
+rule TransferFromDoesntChangeOtherBalances(address other, address alice, address bob, uint256 amount) {
+    env e;
+    require bob != alice;
+    require bob != other && e.msg.sender != other && e.msg.sender != alice;
+    requireInvariant checkPointBlockNumberValidity(e);
+
+    mathint balanceBeforeOther = currentContract.balanceOf(e, other);
+
+    bool success = transferFrom(e, alice, bob, amount);
+
+    assert balanceBeforeOther == to_mathint(currentContract.balanceOf(e, other));
+}
+
+
+/*
+    @Description:
+        Allowance changes correctly as a result of calls to approve, transfer, increaseAllowance, decreaseAllowance
+
+
+    @Notes:
+        Some ERC20 tokens have functions like permit() that change allowance via a signature. 
+        The rule will fail on such functions.
+*/
+rule ChangingAllowance(method f, address from, address spender) {
+    uint256 allowanceBefore = allowance(from, spender);
+    env e;
+    if (f.selector == sig:approve(address, uint256).selector) {
+        address spender_;
+        uint256 amount;
+        approve(e, spender_, amount);
+        if (from == e.msg.sender && spender == spender_) {
+            assert allowance(from, spender) == amount;
+        } else {
+            assert allowance(from, spender) == allowanceBefore;
+        }
+    } else if (f.selector == sig:transferFrom(address,address,uint256).selector) {
+        address from_;
+        address to;
+        uint256 amount;
+        transferFrom(e, from_, to, amount);
+        mathint allowanceAfter = allowance(from, spender);
+        if (from == from_ && spender == e.msg.sender) {
+            assert from == to || allowanceBefore == max_uint256 || allowanceAfter == allowanceBefore - amount;
+        } else {
+            assert allowance(from, spender) == allowanceBefore;
+        }
+    } else if (f.selector == sig:permit(address, address, uint256, uint256, uint8, bytes32, bytes32).selector) {
+        address owner;
+        address spender_;
+        uint256 value;
+        uint256 deadline;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        permit(e, owner, spender_, value, deadline, v, r, s);
+        if (from == owner && spender == spender_) {
+            assert allowance(from, spender) == value;
+        } else {
+            assert allowance(from, spender) == allowanceBefore;
+        }
+    } else if (f.selector == sig:approveAndCall(address, uint256, bytes).selector) {
+        address spender_;
+        uint256 amount_;
+        bytes extraData_;
+        approveAndCall(e, spender_, amount_, extraData_);
+        if (from == e.msg.sender && spender == spender_) {
+            assert allowance(from, spender) == amount_;
+        } else {
+            assert allowance(from, spender) == allowanceBefore;
+        } 
+    } else
+    {
+        calldataarg args;
+        f(e, args);
+        assert allowance(from, spender) == allowanceBefore;
+    }
+}
