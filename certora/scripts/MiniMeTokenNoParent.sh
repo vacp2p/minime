@@ -8,4 +8,4 @@ certoraRun certora/harness/MiniMeTokenHarness.sol certora/mocks/DummyERC20Impl.s
 --optimistic_loop \
 --packages @openzeppelin=node_modules/@openzeppelin \
 --rule_sanity \
---msg "MiniMe Token no parent"  #--commit_sha1 7cbe3099ae6d01a19eea0fed3604d6377b1c358f
+--msg "MiniMe Token no parent"
