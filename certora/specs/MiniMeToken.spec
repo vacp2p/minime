@@ -435,7 +435,7 @@ rule TransferDoesntChangeOtherBalances(address other, address bob, uint256 amoun
 rule TransferFromDoesntChangeOtherBalances(address other, address alice, address bob, uint256 amount) {
     env e;
     require bob != alice;
-    require bob != other && e.msg.sender != other && e.msg.sender != alice;
+    require bob != other && e.msg.sender != other && other != alice;
     requireInvariant checkPointBlockNumberValidity(e);
 
     mathint balanceBeforeOther = currentContract.balanceOf(e, other);
