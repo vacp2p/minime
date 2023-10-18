@@ -1,0 +1,42 @@
+diff --git a/contracts/MiniMeBase.sol b/contracts/MiniMeBase.sol
+index c518f8f..bde4934 100644
+--- a/contracts/MiniMeBase.sol
++++ b/contracts/MiniMeBase.sol
+@@ -44,7 +44,7 @@ import { Nonces } from "./Nonces.sol";
+ ///  token using the token distribution at a given block, this will allow DAO's
+ ///  and DApps to upgrade their features in a decentralized manner without
+ ///  affecting the original token
+-abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces {
++contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces { // Munged: removed abstract.
+     string public name; //The Token's name: e.g. DigixDAO Tokens
+     uint8 public immutable decimals; //Number of decimals of the smallest unit
+     string public symbol; //An identifier: e.g. REP
+@@ -76,13 +76,13 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
+     // `balances` is the map that tracks the balance of each address, in this
+     //  contract when the balance changes the block number that the change
+     //  occurred is also included in the map
+-    mapping(address account => Checkpoint[] history) private balances;
++    mapping(address account => Checkpoint[] history) public balances;
+ 
+     // `allowed` tracks any extra transfer rights as in all ERC20 tokens
+-    mapping(address account => mapping(address authorized => uint256 amount) allowance) private allowed;
++    mapping(address account => mapping(address authorized => uint256 amount) allowance) public allowed;
+ 
+     // Tracks the history of the `totalSupply` of the token
+-    Checkpoint[] private totalSupplyHistory;
++    Checkpoint[] public totalSupplyHistory; // Munged: private -> public
+ 
+     // Flag that determines if the token is transferable or not.
+     bool public transfersEnabled;
+@@ -442,8 +442,10 @@ abstract contract MiniMeBase is Controlled, IERC20, IERC20Permit, EIP712, Nonces
+             if (checkpoint.fromBlock < block.number) {
+                 checkpoint = checkpoints.push();
+                 checkpoint.fromBlock = uint128(block.number);
++                checkpoint.value = uint128(_value);
++            } else {
++                checkpoint.value = uint128(_value);
+             }
+-            checkpoint.value = uint128(_value);
+         } else {
+             Checkpoint storage checkpoint = checkpoints.push();
+             checkpoint.fromBlock = uint128(block.number);
