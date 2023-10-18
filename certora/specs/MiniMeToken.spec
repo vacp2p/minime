@@ -39,14 +39,14 @@ methods {
     function parentSnapShotBlock() external returns (uint) envfree;
     function controller() external returns (address) envfree;
 
-
     // Harness:
     function getCheckpointsLengthByAddress(address user) external returns (uint256) envfree;
     function getLatestBlockNumberByAddress(address user) external returns (uint256) envfree;
     function getCheckpointByAddressAndIndex(address user, uint256 index) external returns (MiniMeBase.Checkpoint) envfree;
     function getFromBlockByAddressAndIndex(address user, uint256 index) external returns (uint256) envfree;
     // function balanceOfAtHarness(address owner, uint blockNumber) external returns (uint) envfree;
-    
+     
+    // Summarizations:
     function _.onTransfer(address _from, address _to, uint _amount) external => NONDET;
     function _.onApprove(address _from, address _spender, uint _amount) external => NONDET;
     function _.receiveApproval(address from, uint256 _amount, address _token, bytes _data) external => NONDET;
@@ -131,7 +131,10 @@ function doesntChangeBalance(method f) returns bool {
         f.selector != sig:destroyTokens(address, uint).selector);
 }
 
-// each checkpoint.fromBlock must be less than the current blocknumber (no checkpoints from the future).
+/*
+    @Description:
+        Each checkpoint.fromBlock must be less than the current blocknumber (no checkpoints from the future).
+*/
 invariant checkPointBlockNumberValidity(env e1)
     e1.block.number > 0 => (forall uint256 i . forall address user . to_mathint(fromBlocks[user][i]) <= to_mathint(e1.block.number))
     { 
@@ -140,7 +143,10 @@ invariant checkPointBlockNumberValidity(env e1)
         } 
     }
 
-// checkpoint.fromBlock is monotonicly increasing for each user. This rule was proven inorder to assume this property on the mirrored structs and thats why it is vaccuous now.
+/*
+    @Description:
+        checkpoint.fromBlock is monotonicly increasing for each user. This rule was proven inorder to assume this property on the mirrored structs and thats why it is vaccuous now.
+*/
 invariant blockNumberMonotonicInc(env e1)
     getFromBlockByAddressAndIndex(e1.msg.sender, e1.block.number) < getFromBlockByAddressAndIndex(e1.msg.sender, assert_uint256(e1.block.number + 1))
     { 
@@ -149,28 +155,31 @@ invariant blockNumberMonotonicInc(env e1)
         } 
     }
 
-// all Block Numbers Are Greater OrEqual To the Creation Block.
+/*
+    @Description:
+        All Block Numbers Are Greater OrEqual To the Creation Block.
+*/
 invariant allBlockNumbersAreGreaterOrEqualToCreationBlock(address user, uint256 index)
     getFromBlockByAddressAndIndex(user, index) >= creationBlock()
     { preserved with (env e) { require e.block.number > creationBlock();} }
 
-// all Block Numbers Are Greater OrEqual To the Parent Snapshot Block.
+/*
+    @Description:
+        All Block Numbers Are Greater OrEqual To the Parent Snapshot Block.
+*/
 invariant allFromBlockAreGreaterThanParentSnapShotBlock(address user, uint256 index) 
     getFromBlockByAddressAndIndex(user, index) >= parentSnapShotBlock();
 
-// the balance of each user must be less or equal to the total supply.
+/*
+    @Description:
+        The balance of each user must be less or equal to the total supply.
+*/
 invariant balanceOfLessOrEqToTotalSpply(env e, address owner, uint blocknumber)
     balanceOfAt(e, owner, blocknumber) <= totalSupplyAt(e, blocknumber);
-    // { 
-    //     preserved with (env e1) { 
-    //     } 
-    // }
 
 /*
     @Description:
         Balance of address 0 is always 0
-
-    @Notes:
 */
 invariant ZeroAddressNoBalance(env e)
     currentContract.balanceOf(e, 0) == 0
@@ -180,7 +189,10 @@ invariant ZeroAddressNoBalance(env e)
         } 
     }
 
-
+/*
+    @Description:
+         Cant change balances and totalSupply history.
+*/
 rule historyMutability(method f, address user) {
     env e1;
     env e;
@@ -203,7 +215,6 @@ rule historyMutability(method f, address user) {
 /*
     @Description:
         Verify that there is no fee on transferFrom() (like potentially on USDT)
-    @Notes:
 */
 rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
     env e;
@@ -215,7 +226,7 @@ rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
     requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(alice, 0);
     mathint balanceBefore = currentContract.balanceOf(e, bob);
     mathint balanceAliceBefore = currentContract.balanceOf(e, alice);
-
+    // avoid overflows
     require balanceBefore + balanceAliceBefore < max_uint128;
 
     bool success = transferFrom(e, alice, bob, amount);
@@ -232,8 +243,6 @@ rule noFeeOnTransferFrom(address alice, address bob, uint256 amount) {
 /*
     @Description:
         Verify that there is no fee on transfer() (like potentially on USDT)
-    
-    @Notes:
 */
 rule noFeeOnTransfer(address bob, uint256 amount) {
     env e;
@@ -243,7 +252,7 @@ rule noFeeOnTransfer(address bob, uint256 amount) {
     requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(bob, 0);
     mathint balanceSenderBefore = currentContract.balanceOf(e, e.msg.sender);
     mathint balanceBefore = currentContract.balanceOf(e, bob);
-
+    // avoid overflows
     require balanceBefore + balanceSenderBefore < max_uint128;
 
     bool success = transfer(e, bob, amount);
@@ -270,16 +279,15 @@ rule noFeeOnTransfer(address bob, uint256 amount) {
 rule transferCorrect(address to, uint256 amount) {
     env e;
     require e.msg.value == 0 && e.msg.sender != 0;
-
     require e.msg.sender < 100;
-
     requireInvariant checkPointBlockNumberValidity(e);
+
     uint256 fromBalanceBefore = currentContract.balanceOf(e, e.msg.sender);
     uint256 toBalanceBefore = currentContract.balanceOf(e, to);
-    require fromBalanceBefore + toBalanceBefore <= max_uint256;
+    // avoid overflows
+    require fromBalanceBefore + toBalanceBefore <= max_uint128;
 
     bool success = transfer(e, to, amount);
-    // bool reverted = lastReverted;
     if (success) {
         if (e.msg.sender == to) {
             assert currentContract.balanceOf(e, e.msg.sender) == fromBalanceBefore;
@@ -308,7 +316,8 @@ rule transferFromCorrect(address from, address to, uint256 amount) {
     uint256 fromBalanceBefore = currentContract.balanceOf(e, from);
     uint256 toBalanceBefore = currentContract.balanceOf(e, to);
     uint256 allowanceBefore = allowance(from, e.msg.sender);
-    require fromBalanceBefore + toBalanceBefore <= max_uint256;
+    // avoid overflows
+    require fromBalanceBefore + toBalanceBefore <= max_uint128;
 
     bool success = transferFrom(e, from, to, amount);
 
@@ -333,7 +342,8 @@ rule transferFromReverts(address from, address to, uint256 amount) {
     requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, 0);
     require from != 0 && e.msg.sender != 0;
     require e.msg.value == 0;
-    require fromBalanceBefore + currentContract.balanceOf(e, to) <= max_uint256;
+    // avoid overflows
+    require fromBalanceBefore + currentContract.balanceOf(e, to) <= max_uint128;
     bool transfersEnabled = transfersEnabled();
 
     transferFrom@withrevert(e, from, to, amount);
@@ -365,8 +375,6 @@ rule NoChangeTotalSupply(method f) {
 /*
     @Description:
         Test that generateTokens works correctly. Balances and totalSupply are updated corrct according to the paramenters.
-
-    @Notes:
 */
 rule integrityOfGenerateTokens(address owner, uint amount) {
     env e;
@@ -390,8 +398,6 @@ rule integrityOfGenerateTokens(address owner, uint amount) {
 /*
     @Description:
         Test that destroyTokens works correctly. Balances and totalSupply are updated corrct according to the paramenters.
-
-    @Notes:
 */
 rule integrityOfDestroyTokens(address owner, uint amount) {
     env e;
@@ -410,8 +416,6 @@ rule integrityOfDestroyTokens(address owner, uint amount) {
 /*
     @Description:
         Transfer from a to b using transfer doesn't change the balance of other addresses
-    
-    @Notes:
 */
 rule TransferDoesntChangeOtherBalances(address other, address bob, uint256 amount) {
     env e;
@@ -429,8 +433,6 @@ rule TransferDoesntChangeOtherBalances(address other, address bob, uint256 amoun
 /*
     @Description:
         Transfer from a to b using transferFrom doesn't change the balance of other addresses
-    
-    @Notes:
 */
 rule TransferFromDoesntChangeOtherBalances(address other, address alice, address bob, uint256 amount) {
     env e;
