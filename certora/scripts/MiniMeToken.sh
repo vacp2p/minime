@@ -7,4 +7,4 @@ certoraRun certora/harness/MiniMeTokenHarness.sol certora/mocks/DummyERC20Impl.s
 --loop_iter 3 \
 --optimistic_loop \
 --packages @openzeppelin=node_modules/@openzeppelin \
---msg "MiniMe Token no parent"
+--msg "MiniMe Token"
