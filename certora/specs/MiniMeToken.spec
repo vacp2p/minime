@@ -257,8 +257,6 @@ rule noFeeOnTransfer(address bob, uint256 amount) {
 */
 rule transferCorrect(address to, uint256 amount) {
     env e;
-    require e.msg.value == 0 && e.msg.sender != 0;
-    require e.msg.sender < 100;
     requireInvariant checkPointBlockNumberValidity(e);
 
     uint256 fromBalanceBefore = currentContract.balanceOf(e, e.msg.sender);
@@ -290,7 +288,6 @@ rule transferCorrect(address to, uint256 amount) {
 */
 rule transferFromCorrect(address from, address to, uint256 amount) {
     env e;
-    require e.msg.value == 0;
     uint256 fromBalanceBefore = currentContract.balanceOf(e, from);
     uint256 toBalanceBefore = currentContract.balanceOf(e, to);
     uint256 allowanceBefore = allowance(from, e.msg.sender);
