@@ -22,3 +22,4 @@ resource_errors.json
 last_conf*
 certora*.txt
 .zip-output-url.txt
+certora/munged/*
