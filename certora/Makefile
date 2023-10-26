@@ -11,7 +11,7 @@ help:
 	@echo "  make $(MUNGED_DIR): create $(MUNGED_DIR) directory by applying the patch file to $(CONTRACTS_DIR)"
 	@echo "  make record: record a new patch file capturing the differences between $(CONTRACTS_DIR) and $(MUNGED_DIR)"
 
-munge:
+munged:
 	cp -R $(MiniMeBase_origin) $(MUNGED_DIR)
 	patch -d $(MUNGED_DIR) < $(PATCH)
 
