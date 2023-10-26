@@ -13,9 +13,6 @@ contract MiniMeTokenHarness is MiniMeToken {
         bool _transfersEnabled
     ) public MiniMeToken(_parentToken, _parentSnapShotBlock, _tokenName, _decimalUnits, _tokenSymbol, _transfersEnabled) {}
 
-    // function getBalancesLengthByAddress(address user) public view returns (uint256) {
-    //     return balances[user].length;
-    // }
 
     function getCheckpointsLengthByAddress(address user) public view returns (uint256) {
         return balances[user].length;
@@ -39,9 +36,4 @@ contract MiniMeTokenHarness is MiniMeToken {
         if (checkpointsLength == 0 || index >= checkpointsLength) revert();
         return balances[user][index].fromBlock;
     }
-
-    // function balanceOfAtHarness(address owner, uint blockNumber) public view returns (uint) {
-    //     return balanceOfAt(owner, _blockNumber);
-    // }
-
 }
