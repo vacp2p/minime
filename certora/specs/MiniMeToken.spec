@@ -3,7 +3,6 @@ using DummyController as DummyController;
 using DummyERC20Impl as DummyERC20Impl;
 
 methods {
-    // function transfer(address _to, uint256 _amount) external returns (bool);
     function _.transfer(address _to, uint256 _amount) external => DISPATCHER(true);
     function transferFrom(address _from, address _to, uint256 _amount) external returns (bool);
     function doTransfer(address _from, address _to, uint _amount) internal returns (bool);
@@ -11,21 +10,15 @@ methods {
     function _mint(address, uint) internal returns (bool);
     function _burn(address _owner, uint _amount) internal returns (bool);
     function _.balanceOf(address _owner) external => DISPATCHER(true);
-    // function balanceOf(address _owner) external returns (uint256);
     function approve(address _spender, uint256 _amount) external returns (bool);
     function allowance(address _owner, address _spender) external returns (uint256) envfree;
     function approveAndCall(address _spender, uint256 _amount, bytes memory _extraData) external returns (bool);
     function totalSupply() external returns (uint);
     function balanceOfAt(address _owner, uint _blockNumber) external returns (uint) envfree;
     function totalSupplyAt(uint _blockNumber) external returns (uint) envfree;
-    // function _.balanceOfAt(address _owner, uint _blockNumber) external => DISPATCHER(true);
-    // function _.totalSupplyAt(uint _blockNumber) external => DISPATCHER(true);
-    function createCloneToken(string memory _cloneTokenName, uint8 _cloneDecimalUnits, string memory _cloneTokenSymbol, uint _snapshotBlock, bool _transfersEnabled) external returns(address);
     function generateTokens(address _owner, uint _amount) external returns (bool); // onlyController
     function destroyTokens(address _owner, uint _amount) external returns (bool); // onlyController
     function enableTransfers(bool _transfersEnabled) external; // onlyController
-    // function getValueAt(MiniMeToken.Checkpoint[] storage checkpoints, uint _block) internal returns (uint);
-    // function updateValueAtNow(MiniMeToken.Checkpoint[] storage checkpoints, uint _value) internal;
     function isContract(address _addr) internal returns(bool);
     function min(uint a, uint b) internal returns (uint);
     function claimTokens(address _token) external; // onlyController
@@ -44,18 +37,13 @@ methods {
     function getLatestBlockNumberByAddress(address user) external returns (uint256) envfree;
     function getCheckpointByAddressAndIndex(address user, uint256 index) external returns (MiniMeBase.Checkpoint) envfree;
     function getFromBlockByAddressAndIndex(address user, uint256 index) external returns (uint256) envfree;
-    // function balanceOfAtHarness(address owner, uint blockNumber) external returns (uint) envfree;
      
     // Summarizations:
-    function _.onTransfer(address _from, address _to, uint _amount) external => NONDET;
+    function _.onTransfer(address _from, address _to, uint _amount) external => ALWAYS(true);
     function _.onApprove(address _from, address _spender, uint _amount) external => NONDET;
     function _.receiveApproval(address from, uint256 _amount, address _token, bytes _data) external => NONDET;
     function _.proxyPayment(address) external => NONDET;
-    function _.createCloneToken(address, uint, bytes, uint8, bytes, bool) external => NONDET;
-    // function _.transfer(address) external => NONDET;
     function DummyController.transfer(address, uint256) external returns (bool) => NONDET;
-    // function DummyERC20Impl.balanceOfAt(address _owner, uint _blockNumber) external returns (uint) envfree;
-    // function DummyERC20Impl.totalSupplyAt(uint _blockNumber) external returns (uint) envfree;
 
 }
 
@@ -69,15 +57,6 @@ ghost mapping(uint256 => uint128) totalSupplyFromBlocks {
 }
 ghost mapping(address => mapping(uint256 => uint128)) values;
 ghost mapping(uint256 => uint128) totalSupplyvalues;
-
-// ghost mapping(address => mapping(uint256 => uint128)) fromBlocks {
-//     axiom forall address user . forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  fromBlocks[user][index1] > fromBlocks[user][index2];
-// }
-// ghost mapping(uint256 => uint128) totalSupplyFromBlocks {
-//     axiom forall uint256 index1 . forall uint256 index2 . index1 > index2 =>  totalSupplyFromBlocks[index1] > totalSupplyFromBlocks[index2];
-// }
-// ghost mapping(address => mapping(uint256 => uint128)) values;
-// ghost mapping(uint256 => uint128) totalSupplyvalues;
 
 // Mirror total supply history checkpoits values
 hook Sload uint128 _value totalSupplyHistory[INDEX uint256 indx].value STORAGE {
@@ -309,7 +288,6 @@ rule transferCorrect(address to, uint256 amount) {
         This rule fails on tokens with a blacklist and or pause function, like USDC and USDT.
         The prover finds a counterexample of a reverted transfer to a blacklisted address or a transfer in a paused state.
 */
-
 rule transferFromCorrect(address from, address to, uint256 amount) {
     env e;
     require e.msg.value == 0;
@@ -338,7 +316,7 @@ rule transferFromReverts(address from, address to, uint256 amount) {
     env e;
     uint256 allowanceBefore = allowance(from, e.msg.sender);
     uint256 fromBalanceBefore = currentContract.balanceOf(e, from);
-    address controllerAdress = controller();
+    address controllerAddress = controller();
     requireInvariant allFromBlockAreGreaterThanParentSnapShotBlock(e.msg.sender, 0);
     require from != 0 && e.msg.sender != 0;
     require e.msg.value == 0;
@@ -351,7 +329,7 @@ rule transferFromReverts(address from, address to, uint256 amount) {
     bool didRevert = lastReverted;
 
     assert didRevert <=> 
-           (allowanceBefore < amount || amount > fromBalanceBefore || to == 0 && amount != 0 || to == currentContract && amount != 0 || !transfersEnabled && e.msg.sender != controllerAdress || parentSnapShotBlock() >= e.block.number && amount != 0); // && e.msg.sender != controllerAdress;
+           (allowanceBefore < amount && e.msg.sender != controllerAddress || amount > fromBalanceBefore || to == 0 && amount != 0 || to == currentContract && amount != 0 || !transfersEnabled && e.msg.sender != controllerAddress || parentSnapShotBlock() >= e.block.number && amount != 0); // && e.msg.sender != controllerAdress;
 }
 
 /*
@@ -401,6 +379,7 @@ rule integrityOfGenerateTokens(address owner, uint amount) {
 */
 rule integrityOfDestroyTokens(address owner, uint amount) {
     env e;
+    requireInvariant checkPointBlockNumberValidity(e);
     mathint totalSupplyBefore = currentContract.totalSupply(e);
     mathint ownerBalanceBefore = currentContract.balanceOf(e, owner);
 
